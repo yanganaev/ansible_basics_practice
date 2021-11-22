@@ -1,0 +1,8 @@
+#####################################
+# 1. Ansible Basics Practice Task 3 #
+#####################################
+---
+- hosts: nodes
+  roles:
+    - httpd
+    - vsftpd
