@@ -1,0 +1,159 @@
+cat passwd
+alice password: alice
+bob password: bob
+
+name: alice
+carol password: carol
+
+#####################################
+
+[ansible@control lesson2]$ vi passwd
+[ansible@control lesson2]$ ll
+total 16
+-rw-rw-r--. 1 ansible ansible 156 Nov 19 11:20 ansible.cfg
+-rw-rw-r--. 1 ansible ansible  44 Nov 19 11:20 inventory
+-rw-------. 1 ansible ansible  32 Nov 19 13:07 passwd
+-rw-rw-r--. 1 ansible ansible 694 Nov 19 11:46 playbook.yml
+[ansible@control lesson2]$ vi passwd
+[ansible@control lesson2]$ cat passwd
+T4stPassw0rd
+
+[ansible@control lesson2]$ vi secret.yml
+[ansible@control lesson2]$ vi playbook.yml
+[ansible@control lesson2]$ ll
+total 20
+-rw-rw-r--. 1 ansible ansible 156 Nov 19 11:20 ansible.cfg
+-rw-rw-r--. 1 ansible ansible  44 Nov 19 11:20 inventory
+-rw-------. 1 ansible ansible  14 Nov 19 13:10 passwd
+-rw-rw-r--. 1 ansible ansible 309 Nov 19 13:18 playbook.yml
+-rw-rw-r--. 1 ansible ansible  26 Nov 19 13:12 secret.yml
+[ansible@control lesson2]$ ansible-vault encrypt secret.yml --vault-password-file=passwd
+Encryption successful
+[ansible@control lesson2]$ ll
+total 20
+-rw-rw-r--. 1 ansible ansible 156 Nov 19 11:20 ansible.cfg
+-rw-rw-r--. 1 ansible ansible  44 Nov 19 11:20 inventory
+-rw-------. 1 ansible ansible  14 Nov 19 13:10 passwd
+-rw-rw-r--. 1 ansible ansible 309 Nov 19 13:18 playbook.yml
+-rw-------. 1 ansible ansible 419 Nov 19 13:19 secret.yml
+[ansible@control lesson2]$ cat sercet.yml
+cat: sercet.yml: No such file or directory
+[ansible@control lesson2]$ cat secret.yml
+$ANSIBLE_VAULT;1.1;AES256
+34636131663930633235623365663261643966396562656564613964343737663832633432386662
+6134373535663662363766386534633731363062363463330a343264393935303130353438343238
+36373430383266643666386465636530383331303935626262353365316563316231656464626362
+6361623931666164350a663038363438656236346666396334336265316635663432346133653234
+36613331623631623738366331376532313163306438656566386338646538383563
+[ansible@control lesson2]$ ansible-playbook playbook.yml --vault-password-file=vault-pass -kK
+SSH password:
+BECOME password[defaults to SSH password]:
+ERROR! The vault password file /home/ansible/lesson2/vault-pass was not found
+[ansible@control lesson2]$ ansible-playbook playbook.yml --vault-password-file=passwd -kK
+SSH password:
+BECOME password[defaults to SSH password]:
+[WARNING]: Found variable using reserved name: name
+
+PLAY [Create a user] ***************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************ok: [node1.example.com]
+
+TASK [Creating user] ***************************************************************************************************fatal: [node1.example.com]: FAILED! => {"msg": "The task includes an option with an undefined variable. The error was: 'username' is undefined\n\nThe error appears to be in '/home/ansible/lesson2/playbook.yml': line 10, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n  tasks:\n    - name: Creating user\n      ^ here\n"}
+
+PLAY RECAP *************************************************************************************************************node1.example.com          : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+
+[ansible@control lesson2]$ vi playbook.yml
+[ansible@control lesson2]$ ll
+total 20
+-rw-rw-r--. 1 ansible ansible 156 Nov 19 11:20 ansible.cfg
+-rw-rw-r--. 1 ansible ansible  44 Nov 19 11:20 inventory
+-rw-------. 1 ansible ansible  14 Nov 19 13:10 passwd
+-rw-rw-r--. 1 ansible ansible 309 Nov 19 13:18 playbook.yml
+-rw-------. 1 ansible ansible 419 Nov 19 13:19 secret.yml
+[ansible@control lesson2]$ cat secret.yml
+$ANSIBLE_VAULT;1.1;AES256
+34636131663930633235623365663261643966396562656564613964343737663832633432386662
+6134373535663662363766386534633731363062363463330a343264393935303130353438343238
+36373430383266643666386465636530383331303935626262353365316563316231656464626362
+6361623931666164350a663038363438656236346666396334336265316635663432346133653234
+36613331623631623738366331376532313163306438656566386338646538383563
+[ansible@control lesson2]$ ansible-vault dencrypt secret.yml --vault-password-file=passwd
+usage: ansible-vault [-h] [--version] [-v]
+                     {create,decrypt,edit,view,encrypt,encrypt_string,rekey}
+                     ...
+ansible-vault: error: argument action: invalid choice: 'dencrypt' (choose from 'create', 'decrypt', 'edit', 'view', 'enc
+username: lisa
+rypt', 'encrypt_string', 'rekey')
+[ansible@control lesson2]$ ansible-vault decrypt secret.yml --vault-password-file=passwd
+Decryption successful
+[ansible@control lesson2]$ ll
+total 20
+-rw-rw-r--. 1 ansible ansible 156 Nov 19 11:20 ansible.cfg
+-rw-rw-r--. 1 ansible ansible  44 Nov 19 11:20 inventory
+-rw-------. 1 ansible ansible  14 Nov 19 13:10 passwd
+-rw-rw-r--. 1 ansible ansible 309 Nov 19 13:18 playbook.yml
+-rw-------. 1 ansible ansible  26 Nov 19 13:26 secret.yml
+[ansible@control lesson2]$ cat secret.yml
+name: alice
+pwhash: alice
+[ansible@control lesson2]$ vi secret.yml
+[ansible@control lesson2]$ ansible-vault encrypt secret.yml --vault-password-file=passwd
+Encryption successful
+[ansible@control lesson2]$ cat secret.yml
+$ANSIBLE_VAULT;1.1;AES256
+38316336353233656265653362316133353030396637396132383433636433353730656262316236
+6639376464363265356634643638613964313166336631340a333462613939636562306431333639
+35333630346436373437346630343135343435393638643931666464346230633930346566663338
+6664333866363137370a373535616434356365336137613334346237303731663933663334313834
+33353735393935383263373539633136393734366238353936343432313736396263343764313137
+3933323338646136303165343031336638616137663039663434
+[ansible@control lesson2]$ ansible-playbook playbook.yml --vault-password-file=passwd -kK
+SSH password:
+BECOME password[defaults to SSH password]:
+
+PLAY [Create a user] ***************************************************************************************************
+TASK [Gathering Facts] *************************************************************************************************ok: [node1.example.com]
+
+TASK [Creating user] ***************************************************************************************************[WARNING]: The input ******** appears not to have been hashed. The '********' argument must be encrypted for this
+module to work properly.
+changed: [node1.example.com]
+
+PLAY RECAP *************************************************************************************************************node1.example.com          : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+[ansible@control lesson2]$ ssh lisa@node1.example.com
+lisa@node1.example.com's password:
+Permission denied, please try again.
+lisa@node1.example.com's password:
+
+[ansible@control lesson2]$ ll
+total 20
+-rw-rw-r--. 1 ansible ansible 156 Nov 19 11:20 ansible.cfg
+-rw-rw-r--. 1 ansible ansible  44 Nov 19 11:20 inventory
+-rw-------. 1 ansible ansible  14 Nov 19 13:10 passwd
+-rw-rw-r--. 1 ansible ansible 309 Nov 19 13:18 playbook.yml
+-rw-------. 1 ansible ansible 484 Nov 19 13:28 secret.yml
+[ansible@control lesson2]$ cat playbook.yml
+#####################################
+# 1. Ansible Basics Practice Task 2 #
+#####################################
+---
+- name: Create a user
+  hosts: node1.example.com
+  vars_files:
+    - secret.yml
+  tasks:
+    - name: Creating user
+      user:
+        name: "{{ username }}"
+        password: "{{ pwhash }}"
+[ansible@control lesson2]$
+
+
+ansible-vault encrypt_string --vault-password-file vault-pass 'Bob' --name 'password'
+password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36303162663430336638623137376137313035386136313131393930346363353131316662656165
+          6231376463613263323431643562393262353636313535320a643461616632313265306463323531
+          35633833643665383732343839326566643835613634396561626639363137383633366665333032
+          3834336432613730650a343230333062653166376464653764656461303863333538383361343231
+          3566
