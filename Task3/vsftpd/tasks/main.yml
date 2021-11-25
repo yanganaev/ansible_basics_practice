@@ -1,0 +1,58 @@
+---
+  - name: Checking if {{ ftpserver }} installed
+    yum:
+      name: "{{ ftpserver }}"
+      state: present
+  - name: Checking if ftp is running and enabled
+    service:
+      name: "{{ ftpserver }}" 
+      state: started
+      enabled: yes
+  - name: Checking for python SElinux tools
+    yum:
+      name: policycoreutils-python-utils
+      state: present
+  - name: Enable SELinux
+    selinux:
+      policy: targeted
+      state: enforcing
+  - name: Creating ftp directory
+    file:
+      state: directory
+      path: "{{ ftp_pub_dir }}"
+      mode: '755'
+      setype: public_content_rw_t
+  - name: Creating ftp directory for upload
+    file:
+      state: directory
+      path: "{{ ftp_upload_dir }}"
+      mode: '777'
+      setype: public_content_rw_t
+  - name: Set {{ ftp_write_mode_name }} flag {{ ftp_write_mode }} and keep it persistent across reboots
+    seboolean:
+      name: "{{ ftp_write_mode_name }}"
+      state: "{{ ftp_write_mode }}"
+      persistent: yes
+  - name: Creating a config file and restarting ftp on changes
+    template:
+      src: ftptemplate.j2
+      dest: "{{ ftp_config_path }}"
+    notify:
+    - Restart ftp server
+  - name: Looking for installation of {{ firewall }}
+    yum:
+      name: "{{ firewall }}"
+      state: present
+  - name: Checking if {{ firewall }} is running and enabled
+    service:
+      name: "{{ firewall }}"
+      state: started
+      enabled: yes
+  - name: Opening port for ftp access
+    firewalld:
+      service: "{{ ftp_port }}"
+      permanent: true
+      state: enabled
+    when: firewall == "firewalld"
+    notify:
+    - Restart firewall
