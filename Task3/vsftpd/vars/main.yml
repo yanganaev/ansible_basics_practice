@@ -1,0 +1,10 @@
+---
+# vars file for lesson03ftp
+ftpserver: vsftpd
+firewall: firewalld
+ftp_config_path: /etc/vsftpd/vsftpd.conf
+ftp_port: ftp
+ftp_pub_dir: /var/ftp/pub/
+ftp_upload_dir: /var/ftp/pub/upload/
+ftp_write_mode_name: ftpd_anon_write
+ftp_write_mode: on
